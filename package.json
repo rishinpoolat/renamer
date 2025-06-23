@@ -1,6 +1,6 @@
 {
   "name": "smart-renamer",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "🚀 Intelligent file naming suggestions based on project-specific naming conventions. Interactive CLI tool that asks yes/no for each file renaming.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -16,7 +16,7 @@
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist",
     "rename": "bun run dist/cli.js rename",
-    "prepublishOnly": "npm run clean && npm run build"
+    "prepublishOnly": "npm run clean && npm run build && chmod +x dist/cli.js"
   },
   "keywords": [
     "naming-convention",
