@@ -1,7 +1,7 @@
 {
-  "name": "renamer",
+  "name": "smart-renamer",
   "version": "1.0.0",
-  "description": "A TypeScript/Bun project that provides intelligent file naming suggestions based on project-specific naming conventions",
+  "description": "🚀 Intelligent file naming suggestions based on project-specific naming conventions. Interactive CLI tool like commit-suggester for file renaming.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
@@ -15,7 +15,8 @@
     "lint": "eslint src/**/*.ts",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist",
-    "rename": "bun run dist/cli.js rename"
+    "rename": "bun run dist/cli.js rename",
+    "prepublishOnly": "npm run clean && npm run build"
   },
   "keywords": [
     "naming-convention",
@@ -25,7 +26,13 @@
     "cli",
     "camelcase",
     "snake-case",
-    "kebab-case"
+    "kebab-case",
+    "interactive",
+    "renamer",
+    "file-renaming",
+    "code-quality",
+    "developer-tools",
+    "consistency"
   ],
   "author": "Mohammed Rishin Poolat",
   "license": "MIT",
@@ -49,5 +56,13 @@
     "dist/**/*",
     "README.md",
     "LICENSE"
-  ]
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rishinpoolat/renamer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rishinpoolat/renamer/issues"
+  },
+  "homepage": "https://github.com/rishinpoolat/renamer#readme"
 }
