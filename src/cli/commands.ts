@@ -304,6 +304,18 @@ async function renameCommand(options: { dryRun?: boolean; force?: boolean; inter
     '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.svg', '.webp', '.ico', '.tiff',
     // Markdown files
     '.md', '.markdown',
+    // Declaration files (all languages)
+    '.d.ts', '.d.mts', '.d.cts',  // TypeScript declarations
+    '.h', '.hpp', '.hxx',         // C/C++ headers
+    '.hi',                        // Haskell interface files
+    '.pyi',                       // Python stub files
+    '.rbi',                       // Ruby interface files
+    '.rei',                       // ReasonML interface files
+    '.mli',                       // OCaml interface files
+    '.sig',                       // Standard ML signature files
+    '.fsi',                       // F# signature files
+    '.spec',                      // RPM spec files
+    '.def',                       // Definition files (various languages)
     // Config file extensions
     '.config.js', '.config.ts', '.config.json', '.yml', '.yaml', '.toml', '.ini'
   ];
@@ -329,7 +341,10 @@ async function renameCommand(options: { dryRun?: boolean; force?: boolean; inter
     
     if (hasExcludedExtension) {
       const fileType = fileExtension.match(/\.(jpg|jpeg|png|gif|bmp|svg|webp|ico|tiff)$/i) ? 'image' :
-                       fileExtension.match(/\.(md|markdown)$/i) ? 'markdown' : 'config';
+                       fileExtension.match(/\.(md|markdown)$/i) ? 'markdown' :
+                       file.name.match(/\.d\.(ts|mts|cts)$/i) ? 'TypeScript declaration' :
+                       fileExtension.match(/\.(h|hpp|hxx)$/i) ? 'C/C++ header' :
+                       fileExtension.match(/\.(hi|pyi|rbi|rei|mli|sig|fsi|spec|def)$/i) ? 'declaration' : 'config';
       console.log(`📄 Skipping ${file.name} (${fileType} files excluded by default)`);
       continue;
     }

@@ -130,6 +130,16 @@ The tool automatically skips these file types:
 - **Config files**: Any file containing "config" (`next.config.mjs`, `webpack.config.js`)
 - **Image files**: `.jpg`, `.png`, `.svg`, `.gif`, etc.
 - **Markdown files**: `.md`, `.markdown`
+- **Declaration files (all languages)**:
+  - TypeScript: `.d.ts`, `.d.mts`, `.d.cts` (like `next-env.d.ts`, `types.d.ts`)
+  - C/C++: `.h`, `.hpp`, `.hxx` (header files)
+  - Python: `.pyi` (stub files)
+  - Haskell: `.hi` (interface files)
+  - Ruby: `.rbi` (interface files)
+  - ReasonML: `.rei` (interface files)
+  - OCaml: `.mli` (interface files)
+  - F#: `.fsi` (signature files)
+  - And more: `.sig`, `.spec`, `.def`
 - **System files**: `package.json`, `tsconfig.json`, `.gitignore`, etc.
 - **Lock files**: `package-lock.json`, `yarn.lock`, `bun.lockb`
 - **Environment files**: `.env`, `.env.example`
@@ -144,6 +154,9 @@ $ renamer rename
 📄 Skipping next.config.mjs (config files excluded by default)
 📄 Skipping logo.png (image files excluded by default)
 📄 Skipping README.md (markdown files excluded by default)
+📄 Skipping next-env.d.ts (TypeScript declaration files excluded by default)
+📄 Skipping utils.h (C/C++ header files excluded by default)
+📄 Skipping types.pyi (declaration files excluded by default)
 
 📝 Found 3 files that can be renamed:
 
