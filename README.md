@@ -2,7 +2,7 @@
 
 🚀 **Intelligent file naming suggestions based on project-specific naming conventions.** 
 
-A TypeScript/Bun CLI tool that automatically detects, suggests, and renames files to follow your project's naming patterns. Works like `commit-suggester` but for file naming!
+A TypeScript/Bun CLI tool that automatically detects, suggests, and renames files to follow your project's naming patterns. Interactive and smart - it asks you about each file individually!
 
 ## Features
 
@@ -38,7 +38,7 @@ bun install -g smart-renamer
 cd your-project
 renamer init
 
-# Rename files interactively (like commit-suggester)
+# Rename files interactively - asks yes/no for each file
 renamer rename
 
 # Analyze your project's naming patterns
@@ -54,7 +54,7 @@ renamer init
 ```
 
 ### `renamer rename` ⭐ **Main Command**
-Interactive file renaming (like `commit-suggester`):
+Interactive file renaming - asks yes/no for each file:
 ```bash
 # Interactive mode - asks yes/no for each file
 renamer rename
