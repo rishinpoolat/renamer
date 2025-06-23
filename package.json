@@ -1,0 +1,53 @@
+{
+  "name": "renamer",
+  "version": "1.0.0",
+  "description": "A TypeScript/Bun project that provides intelligent file naming suggestions based on project-specific naming conventions",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "renamer": "dist/cli.js"
+  },
+  "scripts": {
+    "dev": "bun run --watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "bun test",
+    "lint": "eslint src/**/*.ts",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "rename": "bun run dist/cli.js rename"
+  },
+  "keywords": [
+    "naming-convention",
+    "file-naming",
+    "typescript",
+    "bun",
+    "cli",
+    "camelcase",
+    "snake-case",
+    "kebab-case"
+  ],
+  "author": "Mohammed Rishin Poolat",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/inquirer": "^9.0.8",
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "chokidar": "^3.5.3",
+    "commander": "^11.0.0",
+    "inquirer": "^9.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "LICENSE"
+  ]
+}
