@@ -16,7 +16,7 @@ export function createProgram(): Command {
   program
     .name('renamer')
     .description('Intelligent file naming suggestions based on project conventions')
-    .version('1.1.0');
+    .version('1.2.0');
 
   program
     .command('init')
