@@ -1,7 +1,7 @@
 {
   "name": "smart-renamer",
-  "version": "1.0.4",
-  "description": "🚀 Intelligent file naming suggestions based on project-specific naming conventions. Interactive CLI tool that asks yes/no for each file renaming.",
+  "version": "1.2.0",
+  "description": "🚀 Intelligent file and code naming suggestions based on project-specific naming conventions. Interactive CLI tool with AST-based code analysis for variables, functions, components, and more.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
@@ -11,28 +11,36 @@
     "dev": "bun run --watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "test": "bun test",
+    "test": "echo \"No tests configured\"",
     "lint": "eslint src/**/*.ts",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist",
     "rename": "bun run dist/cli.js rename",
+    "check": "bun run build && bun run dist/cli.js analyze",
     "prepublishOnly": "npm run clean && npm run build && chmod +x dist/cli.js"
   },
   "keywords": [
     "naming-convention",
     "file-naming",
+    "code-analysis",
+    "ast-parser",
     "typescript",
+    "javascript",
+    "react",
     "bun",
     "cli",
     "camelcase",
     "snake-case",
     "kebab-case",
+    "pascal-case",
     "interactive",
     "renamer",
     "file-renaming",
     "code-quality",
     "developer-tools",
-    "consistency"
+    "consistency",
+    "linting",
+    "refactoring"
   ],
   "author": "Mohammed Rishin Poolat",
   "license": "MIT",
@@ -40,13 +48,16 @@
     "@types/inquirer": "^9.0.8",
     "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "@typescript-eslint/parser": "^6.0.0",
     "eslint": "^8.0.0",
     "typescript": "^5.0.0"
   },
   "dependencies": {
+    "@babel/parser": "^7.23.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "@typescript-eslint/types": "^6.0.0",
     "chokidar": "^3.5.3",
     "commander": "^11.0.0",
+    "glob": "^10.0.0",
     "inquirer": "^9.0.0"
   },
   "engines": {

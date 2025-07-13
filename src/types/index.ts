@@ -5,11 +5,23 @@ export type NamingConvention =
   | 'PascalCase'
   | 'UPPER_SNAKE_CASE';
 
+export interface CodeConventions {
+  variables: NamingConvention;
+  functions: NamingConvention;
+  components: NamingConvention;
+  constants: NamingConvention;
+  classes: NamingConvention;
+  interfaces: NamingConvention;
+  types: NamingConvention;
+  enums: NamingConvention;
+}
+
 export interface NamingConfig {
   convention: NamingConvention;
   files: string[];
   folders?: NamingConvention;
   exceptions?: string[];
+  code?: CodeConventions;
 }
 
 export interface FileInfo {

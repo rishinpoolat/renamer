@@ -1,29 +1,49 @@
 # Renamer
 
-🚀 **Intelligent file naming suggestions based on project-specific naming conventions.** 
+🚀 **Intelligent file and code naming suggestions based on project-specific naming conventions.** 
 
-A TypeScript/Bun CLI tool that automatically detects, suggests, and renames files to follow your project's naming patterns. Interactive and smart - it asks you about each file individually!
+A TypeScript/Bun CLI tool that automatically detects, suggests, and validates naming patterns for both files and code. Analyzes variables, functions, components, constants, and more!
 
-## Features
+## ✨ Features
 
+### File Operations
 - 🎯 **Smart Convention Detection**: Automatically detects naming patterns from existing files
-- ⚙️ **Flexible Configuration**: Store naming preferences in `naming.config`
 - 🔄 **Interactive Renaming**: Ask yes/no for each file individually
-- 🖥️ **CLI Interface**: Command-line tool for managing naming conventions
-- ✅ **Validation**: Ensures new file names follow project conventions
-- 🚫 **Smart Exclusions**: Automatically skips config files, images, and markdown files
-- 📊 **Project Analysis**: Analyze naming consistency across your project
+- 🚫 **Smart Exclusions**: Automatically skips config files, images, and declaration files
 - 👀 **File Watcher**: Monitor for new files and suggest names in real-time
 
-## Supported Naming Conventions
+### Code Operations ⭐ **NEW**
+- 💻 **Code Analysis**: Analyze variables, functions, components, constants in your codebase
+- ⚛️ **React Component Detection**: Automatically identifies React components
+- 🔍 **AST-Based Parsing**: Deep code analysis using Babel parser
+- ✅ **Code Validation**: Validate naming conventions with detailed suggestions
 
+### General
+- ⚙️ **Flexible Configuration**: Store both file and code naming preferences
+- 🖥️ **CLI Interface**: Comprehensive command-line tool
+- 📊 **Project Analysis**: Analyze naming consistency across files and code
+- 🎨 **Visual Feedback**: Clear violation reports with suggestions
+
+## 🎨 Supported Naming Conventions
+
+### File/Folder Conventions
 - `camelCase`: fileName.ts
 - `snake_case`: file_name.ts
 - `kebab-case`: file-name.ts
 - `PascalCase`: FileName.ts
 - `UPPER_SNAKE_CASE`: FILE_NAME.ts
 
-## Installation
+### Code Conventions
+- **Variables**: `camelCase` (totalPrice, userName)
+- **Functions**: `camelCase` (calculateShipping, processPayment)
+- **Components**: `PascalCase` (UserCard, ProductList)
+- **Constants**: `UPPER_SNAKE_CASE` (MAX_RETRY_COUNT, API_URL)
+- **Classes**: `PascalCase` (PaymentProcessor, UserManager)
+- **Interfaces**: `PascalCase` (UserProfile, ApiResponse)
+- **Types**: `PascalCase` (PaymentStatus, OrderType)
+- **Enums**: `PascalCase` (OrderStatus, UserRole)
+
+## 📦 Installation
 
 ```bash
 npm install -g smart-renamer
@@ -31,30 +51,91 @@ npm install -g smart-renamer
 bun install -g smart-renamer
 ```
 
-## Quick Start
+## 🚀 Quick Start
 
 ```bash
-# Initialize in your project
+# Initialize in your project (now includes code conventions!)
 cd your-project
 renamer init
 
-# Rename files interactively - asks yes/no for each file
+# Analyze everything - files AND code patterns
+renamer analyze
+
+# Rename files interactively
 renamer rename
 
-# Analyze your project's naming patterns
-renamer analyze
+# Validate code naming conventions
+renamer validate-code --fix
 ```
 
-## Commands
+## 📋 Commands
 
-### `renamer init`
-Initialize naming convention for your project with interactive setup:
+### 🎯 Core Commands
+
+#### `renamer analyze` ⭐ **Enhanced**
+Analyze both file and code naming patterns:
+```bash
+# Analyze everything (files + code)
+renamer analyze
+
+# Analyze only code naming patterns  
+renamer analyze --code-only
+
+# Analyze only file naming patterns
+renamer analyze --files-only
+
+# Analyze specific file patterns
+renamer analyze --patterns="src/**/*.ts,tests/*.ts"
+```
+
+**Example Output:**
+```bash
+📊 Project Analysis
+
+📁 File Naming Analysis
+════════════════════════════════════════
+📁 Total files: 45
+🎯 Most common convention: kebab-case
+📈 File consistency: 87.3%
+
+💻 Code Naming Analysis  
+════════════════════════════════════════
+💻 Total identifiers: 342
+📈 Code consistency: 94.2%
+🎯 Violations found: 8
+
+📋 Code convention breakdown:
+   Variables (245 total):
+   ✅ camelCase            231 (94.3%)
+      snake_case            14 (5.7%)
+   
+   Functions (58 total):
+   ✅ camelCase             58 (100.0%)
+   
+   Components (23 total):
+   ✅ PascalCase            23 (100.0%)
+
+🎯 Recommendations
+════════════════════════════════════════
+💻 Code naming could be improved:
+   • Run `renamer validate-code --fix` to see code suggestions
+```
+
+#### `renamer init`
+Initialize with both file and code conventions:
 ```bash
 renamer init
+# Now asks about code conventions too!
+# - Variables: camelCase, snake_case, etc.
+# - Functions: camelCase, snake_case, etc.  
+# - Components: PascalCase (recommended)
+# - Constants: UPPER_SNAKE_CASE, etc.
 ```
 
-### `renamer rename` ⭐ **Main Command**
-Interactive file renaming - asks yes/no for each file:
+### 📁 File Operations
+
+#### `renamer rename` 
+Interactive file renaming:
 ```bash
 # Interactive mode - asks yes/no for each file
 renamer rename
@@ -69,14 +150,8 @@ renamer rename --force
 renamer rename --keep "file1.js,file2.ts"
 ```
 
-### `renamer set-convention <convention>`
-Set the naming convention:
-```bash
-renamer set-convention kebab-case
-```
-
-### `renamer validate`
-Validate existing file names:
+#### `renamer validate`
+Validate file names:
 ```bash
 # Check all files
 renamer validate
@@ -85,25 +160,62 @@ renamer validate
 renamer validate --fix
 ```
 
-### `renamer suggest <filename>`
-Get naming suggestions for a specific file:
+### 💻 Code Operations ⭐ **NEW**
+
+#### `renamer validate-code`
+Validate code naming conventions:
+```bash
+# Check code conventions
+renamer validate-code
+
+# Show detailed suggestions for violations
+renamer validate-code --fix
+
+# Check specific file patterns
+renamer validate-code --patterns="src/**/*.ts"
+```
+
+**Example Output:**
+```bash
+🔍 Validating code conventions...
+
+❌ Found 3 naming violations:
+
+📁 src/components/user-card.tsx:
+   Line 15: variable "user_name" should be "userName"
+   💡 Alternatives: PascalCase: UserName, kebab-case: user-name
+
+📁 src/utils/payment.ts:
+   Line 8: function "process_payment" should be "processPayment"
+   💡 Alternatives: PascalCase: ProcessPayment
+
+📊 Total: 3 violations in 2 files
+```
+
+#### `renamer analyze-code`
+Detailed code analysis:
+```bash
+renamer analyze-code
+```
+
+### 🔧 Other Commands
+
+#### `renamer set-convention <convention>`
+```bash
+renamer set-convention kebab-case
+```
+
+#### `renamer suggest <filename>`
 ```bash
 renamer suggest "MyFileName.ts"
 ```
 
-### `renamer watch`
-Monitor for new files and suggest names:
+#### `renamer watch`
 ```bash
 renamer watch
 ```
 
-### `renamer analyze`
-Analyze project structure and naming patterns:
-```bash
-renamer analyze
-```
-
-## Configuration
+## ⚙️ Configuration
 
 Create a `naming.config` file in your project root:
 
@@ -113,20 +225,41 @@ convention=kebab-case
 files=*.ts,*.js
 folders=kebab-case
 exceptions=index,main,app
+
+[code]
+variables=camelCase
+functions=camelCase
+components=PascalCase
+constants=UPPER_SNAKE_CASE
+classes=PascalCase
+interfaces=PascalCase
+types=PascalCase
+enums=PascalCase
 ```
 
 ### Configuration Options
 
-- `convention`: Primary naming convention 
+#### File Settings
+- `convention`: Primary file naming convention 
 - `files`: File patterns to apply the convention to
 - `folders`: Naming convention for directories
 - `exceptions`: Files that don't need to follow the convention
 
-## Smart Exclusions
+#### Code Settings ⭐ **NEW**
+- `variables`: Variable naming convention
+- `functions`: Function naming convention  
+- `components`: React component naming convention
+- `constants`: Constant naming convention
+- `classes`: Class naming convention
+- `interfaces`: Interface naming convention
+- `types`: Type alias naming convention
+- `enums`: Enum naming convention
+
+## 🚫 Smart Exclusions
 
 The tool automatically skips these file types:
 
-### 🚫 **Automatically Excluded:**
+### **Automatically Excluded:**
 - **Config files**: Any file containing "config" (`next.config.mjs`, `webpack.config.js`)
 - **Image files**: `.jpg`, `.png`, `.svg`, `.gif`, etc.
 - **Markdown files**: `.md`, `.markdown`
@@ -134,98 +267,133 @@ The tool automatically skips these file types:
   - TypeScript: `.d.ts`, `.d.mts`, `.d.cts` (like `next-env.d.ts`, `types.d.ts`)
   - C/C++: `.h`, `.hpp`, `.hxx` (header files)
   - Python: `.pyi` (stub files)
-  - Haskell: `.hi` (interface files)
-  - Ruby: `.rbi` (interface files)
-  - ReasonML: `.rei` (interface files)
-  - OCaml: `.mli` (interface files)
-  - F#: `.fsi` (signature files)
-  - And more: `.sig`, `.spec`, `.def`
+  - And more: `.hi`, `.rbi`, `.rei`, `.mli`, `.sig`, `.fsi`, `.spec`, `.def`
 - **System files**: `package.json`, `tsconfig.json`, `.gitignore`, etc.
 - **Lock files**: `package-lock.json`, `yarn.lock`, `bun.lockb`
-- **Environment files**: `.env`, `.env.example`
-- **Build configs**: `webpack.config.js`, `vite.config.ts`, etc.
 
-### 📄 **Example Output:**
-```bash
-$ renamer rename
-
-🔄 Finding files to rename to 'kebab-case' convention...
-
-📄 Skipping next.config.mjs (config files excluded by default)
-📄 Skipping logo.png (image files excluded by default)
-📄 Skipping README.md (markdown files excluded by default)
-📄 Skipping next-env.d.ts (TypeScript declaration files excluded by default)
-📄 Skipping utils.h (C/C++ header files excluded by default)
-📄 Skipping types.pyi (declaration files excluded by default)
-
-📝 Found 3 files that can be renamed:
-
-? Rename "userService.ts" to "user-service.ts"? (Y/n) y
-✅ userService.ts → user-service.ts
-
-? Rename "api_helper.js" to "api-helper.js"? (Y/n) y
-✅ api_helper.js → api-helper.js
-
-? Rename "MyComponent.jsx" to "my-component.jsx"? (Y/n) n
-⏭️  Skipped MyComponent.jsx
-
-📊 Completed: 2 renamed, 1 skipped, 0 failed
-```
-
-## Usage Examples
+## 📖 Usage Examples
 
 ### Typical Workflow
 ```bash
-# 1. Initialize in your project
+# 1. Initialize in your project (includes code conventions)
 cd my-react-app
 renamer init
 
-# 2. Choose kebab-case for consistency
-# (Interactive setup will guide you)
+# 2. Set up both file and code conventions
+# Choose kebab-case for files, camelCase for variables, PascalCase for components
 
-# 3. Rename existing files
+# 3. Analyze everything 
+renamer analyze
+# Shows both file and code naming patterns
+
+# 4. Fix file naming
 renamer rename
-# This will ask about each file: "Rename UserProfile.jsx to user-profile.jsx?"
 
-# 4. Set up file watching for new files
+# 5. Fix code naming  
+renamer validate-code --fix
+# Shows exactly which variables/functions need renaming
+
+# 6. Set up file watching for new files
 renamer watch
 ```
 
-### Project Analysis
+### Code Analysis Example
 ```bash
-$ renamer analyze
+$ renamer validate-code --fix
 
-📊 Project Analysis
+🔍 Validating code conventions...
 
-📁 Total files: 45
-🎯 Most common convention: camelCase
-📈 Consistency: 73.3%
+📝 Variables: camelCase
+🔧 Functions: camelCase  
+⚛️  Components: PascalCase
+📊 Constants: UPPER_SNAKE_CASE
 
-📋 Convention breakdown:
-   camelCase              25 files (55.6%)
-   kebab-case             12 files (26.7%)
-   snake_case              5 files (11.1%)
-   PascalCase              3 files (6.7%)
-   UPPER_SNAKE_CASE        0 files (0.0%)
+❌ Found 5 naming violations:
+
+📁 src/components/user-profile.tsx:
+   Line 12: variable "user_data" should be "userData"
+   Line 25: function "render_avatar" should be "renderAvatar"  
+   💡 Alternatives: PascalCase: RenderAvatar
+
+📁 src/utils/api-client.ts:
+   Line 8: constant "api_url" should be "API_URL"
+   Line 15: function "make_request" should be "makeRequest"
+
+📋 Violation Summary:
+   variable: 2 violations
+   function: 2 violations  
+   constant: 1 violations
+
+📊 Total: 5 violations in 2 files
+
+💡 Use --fix to see suggested alternatives
 ```
 
-## Why Use Renamer?
+## 🎯 Why Use Renamer?
 
-- **Consistency**: Maintain consistent naming across your project
-- **Team Standards**: Enforce team naming conventions
-- **Refactoring**: Easily migrate from one naming style to another
-- **New Projects**: Set up naming standards from the start
+- **Consistency**: Maintain consistent naming across files AND code
+- **Team Standards**: Enforce team naming conventions for everything
 - **Code Quality**: Improve codebase readability and maintainability
+- **React Support**: Smart detection of React components
+- **Refactoring**: Easily migrate from one naming style to another
+- **CI/CD Integration**: Use in pipelines to ensure naming standards
 
-## Tech Stack
+## 🛠️ Tech Stack
 
 - **Runtime**: Bun
 - **Language**: TypeScript
+- **AST Parser**: Babel Parser (for code analysis)
 - **CLI**: Commander.js
 - **File Watching**: Chokidar
 - **Interactive Prompts**: Inquirer.js
 
-## Contributing
+## 📋 Package Update Instructions
+
+To update your published package with the new code-level functionality:
+
+### 1. Update Version
+```bash
+# Already done - version is now 1.1.0
+npm version patch  # or minor/major
+```
+
+### 2. Build and Test
+```bash
+bun run build
+bun test
+bun run check  # Test the new analyze command
+```
+
+### 3. Publish to NPM
+```bash
+# Login if needed
+npm login
+
+# Publish the updated package
+npm publish
+```
+
+### 4. Verify Installation
+```bash
+# Test global installation
+npm install -g smart-renamer@latest
+
+# Test the new features
+renamer --version  # Should show 1.1.0
+renamer analyze --help  # Should show new options
+```
+
+### 5. Update Documentation
+The README is now updated with:
+- ✅ Code-level analysis features
+- ✅ Enhanced `renamer analyze` command  
+- ✅ New configuration options
+- ✅ Code validation examples
+- ✅ Complete usage workflows
+
+Your package now offers **comprehensive naming convention management** for both files and code! 🚀
+
+## 🤝 Contributing
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
@@ -233,10 +401,10 @@ $ renamer analyze
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## License
+## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-**Made with ❤️ for developers who care about consistent naming conventions.**
+**Made with ❤️ for developers who care about consistent naming conventions in files AND code.**

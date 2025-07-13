@@ -3,6 +3,8 @@ import { ConfigManager } from '../config/config-manager';
 import { NamingValidator } from '../core/naming-validator';
 import { SuggestionEngine } from '../core/suggestion-engine';
 import { FileWatcher } from '../core/file-watcher';
+import { ASTAnalyzer } from '../core/ast-analyzer';
+import { CodeValidator } from '../core/code-validator';
 import { NamingConvention } from '../types';
 import inquirer from 'inquirer';
 import { renameSync } from 'fs';
@@ -14,7 +16,7 @@ export function createProgram(): Command {
   program
     .name('renamer')
     .description('Intelligent file naming suggestions based on project conventions')
-    .version('1.0.0');
+    .version('1.2.0');
 
   program
     .command('init')
@@ -45,7 +47,10 @@ export function createProgram(): Command {
 
   program
     .command('analyze')
-    .description('Analyze project structure and naming patterns')
+    .description('Analyze project structure and naming patterns (files + code)')
+    .option('--patterns <patterns>', 'Code file patterns to analyze (comma-separated)', '**/*.ts,**/*.tsx,**/*.js,**/*.jsx')
+    .option('--files-only', 'Analyze only file naming patterns')
+    .option('--code-only', 'Analyze only code naming patterns')
     .action(analyzeCommand);
 
   program
@@ -56,6 +61,26 @@ export function createProgram(): Command {
     .option('-i, --interactive', 'Ask yes/no for each file individually (default)')
     .option('--keep <files>', 'Comma-separated list of files to keep unchanged')
     .action(renameCommand);
+
+  program
+    .command('validate-code')
+    .description('Validate code naming conventions (variables, functions, components, etc.)')
+    .option('-f, --fix', 'Show suggested fixes for naming violations')
+    .option('--patterns <patterns>', 'File patterns to analyze (comma-separated)', '**/*.ts,**/*.tsx,**/*.js,**/*.jsx')
+    .action(validateCodeCommand);
+
+  program
+    .command('analyze-code')
+    .description('Analyze code structure and naming patterns')
+    .option('--patterns <patterns>', 'File patterns to analyze (comma-separated)', '**/*.ts,**/*.tsx,**/*.js,**/*.jsx')
+    .action(analyzeCodeCommand);
+
+  program
+    .command('fix-code')
+    .description('Interactive code renaming to follow naming conventions')
+    .option('-d, --dry-run', 'Show what would be changed without making changes')
+    .option('--patterns <patterns>', 'File patterns to analyze (comma-separated)', '**/*.ts,**/*.tsx,**/*.js,**/*.jsx')
+    .action(fixCodeCommand);
 
   return program;
 }
@@ -86,7 +111,7 @@ async function initCommand(): Promise<void> {
     {
       type: 'list',
       name: 'convention',
-      message: 'Choose your preferred naming convention:',
+      message: 'Choose your preferred file naming convention:',
       choices: [
         'camelCase',
         'snake_case',
@@ -120,26 +145,100 @@ async function initCommand(): Promise<void> {
       name: 'exceptions',
       message: 'Files to exclude from convention (comma-separated):',
       default: 'index,main,app'
+    },
+    {
+      type: 'confirm',
+      name: 'setupCodeConventions',
+      message: 'Do you want to set up code-level naming conventions (variables, functions, etc.)?',
+      default: true
     }
   ];
 
   const answers = await inquirer.prompt(questions);
 
-  const config = {
+  const config: any = {
     convention: answers.convention as NamingConvention,
     files: answers.files.split(',').map((s: string) => s.trim()),
     folders: answers.folders as NamingConvention,
     exceptions: answers.exceptions.split(',').map((s: string) => s.trim()).filter(Boolean)
   };
 
+  if (answers.setupCodeConventions) {
+    const codeQuestions = [
+      {
+        type: 'list',
+        name: 'variables',
+        message: 'Variable naming convention:',
+        choices: ['camelCase', 'snake_case', 'kebab-case', 'PascalCase', 'UPPER_SNAKE_CASE'],
+        default: 'camelCase'
+      },
+      {
+        type: 'list',
+        name: 'functions',
+        message: 'Function naming convention:',
+        choices: ['camelCase', 'snake_case', 'kebab-case', 'PascalCase', 'UPPER_SNAKE_CASE'],
+        default: 'camelCase'
+      },
+      {
+        type: 'list',
+        name: 'components',
+        message: 'React Component naming convention:',
+        choices: ['camelCase', 'snake_case', 'kebab-case', 'PascalCase', 'UPPER_SNAKE_CASE'],
+        default: 'PascalCase'
+      },
+      {
+        type: 'list',
+        name: 'constants',
+        message: 'Constant naming convention:',
+        choices: ['camelCase', 'snake_case', 'kebab-case', 'PascalCase', 'UPPER_SNAKE_CASE'],
+        default: 'UPPER_SNAKE_CASE'
+      },
+      {
+        type: 'list',
+        name: 'classes',
+        message: 'Class naming convention:',
+        choices: ['camelCase', 'snake_case', 'kebab-case', 'PascalCase', 'UPPER_SNAKE_CASE'],
+        default: 'PascalCase'
+      }
+    ];
+
+    const codeAnswers = await inquirer.prompt(codeQuestions);
+    
+    config.code = {
+      variables: codeAnswers.variables as NamingConvention,
+      functions: codeAnswers.functions as NamingConvention,
+      components: codeAnswers.components as NamingConvention,
+      constants: codeAnswers.constants as NamingConvention,
+      classes: codeAnswers.classes as NamingConvention,
+      interfaces: 'PascalCase' as NamingConvention,
+      types: 'PascalCase' as NamingConvention,
+      enums: 'PascalCase' as NamingConvention
+    };
+  }
+
   configManager.saveConfig(config);
   
   console.log('\n✅ Configuration saved to naming.config');
-  console.log(`📝 Primary convention: ${config.convention}`);
+  console.log(`📝 File convention: ${config.convention}`);
   console.log(`📁 Folder convention: ${config.folders}`);
+  
+  if (config.code) {
+    console.log(`🔧 Code conventions:`);
+    console.log(`   Variables: ${config.code.variables}`);
+    console.log(`   Functions: ${config.code.functions}`);
+    console.log(`   Components: ${config.code.components}`);
+    console.log(`   Constants: ${config.code.constants}`);
+    console.log(`   Classes: ${config.code.classes}`);
+  }
   
   if (detectedConvention && detectedConvention !== config.convention) {
     console.log(`\n💡 Note: Detected '${detectedConvention}' in existing files, but you chose '${config.convention}'`);
+  }
+  
+  if (config.code) {
+    console.log(`\n🚀 Try these commands:`);
+    console.log(`   renamer validate-code    # Check your code conventions`);
+    console.log(`   renamer analyze-code     # Analyze code patterns`);
   }
 }
 
@@ -263,20 +362,119 @@ async function suggestCommand(filename: string): Promise<void> {
   }
 }
 
-async function analyzeCommand(): Promise<void> {
-  const suggestionEngine = new SuggestionEngine();
-  const analysis = suggestionEngine.analyzeProjectStructure();
-
+async function analyzeCommand(options: { patterns?: string; filesOnly?: boolean; codeOnly?: boolean }): Promise<void> {
+  const configManager = new ConfigManager();
+  const config = configManager.loadConfig();
+  
   console.log('📊 Project Analysis\n');
-  console.log(`📁 Total files: ${analysis.totalFiles}`);
-  console.log(`🎯 Most common convention: ${analysis.mostCommon || 'None detected'}`);
-  console.log(`📈 Consistency: ${(analysis.consistency * 100).toFixed(1)}%\n`);
+  
+  // Analyze file naming patterns (unless code-only)
+  if (!options.codeOnly) {
+    console.log('📁 File Naming Analysis');
+    console.log('═'.repeat(40));
+    
+    const suggestionEngine = new SuggestionEngine();
+    const analysis = suggestionEngine.analyzeProjectStructure();
 
-  console.log('📋 Convention breakdown:');
-  for (const [convention, count] of Object.entries(analysis.conventions)) {
-    const percentage = analysis.totalFiles > 0 ? (count / analysis.totalFiles * 100).toFixed(1) : '0.0';
-    console.log(`   ${convention.padEnd(20)} ${count.toString().padStart(3)} files (${percentage}%)`);
+    console.log(`📁 Total files: ${analysis.totalFiles}`);
+    console.log(`🎯 Most common convention: ${analysis.mostCommon || 'None detected'}`);
+    console.log(`📈 File consistency: ${(analysis.consistency * 100).toFixed(1)}%\n`);
+
+    console.log('📋 File convention breakdown:');
+    for (const [convention, count] of Object.entries(analysis.conventions)) {
+      const percentage = analysis.totalFiles > 0 ? (count / analysis.totalFiles * 100).toFixed(1) : '0.0';
+      console.log(`   ${convention.padEnd(20)} ${count.toString().padStart(3)} files (${percentage}%)`);
+    }
+    console.log('');
   }
+  
+  // Analyze code naming patterns (unless files-only)
+  if (!options.filesOnly) {
+    if (!config.code) {
+      console.log('⚠️  No code conventions configured. Run `renamer init` to set up code conventions.');
+      return;
+    }
+
+    console.log('💻 Code Naming Analysis');
+    console.log('═'.repeat(40));
+    
+    const analyzer = new ASTAnalyzer();
+    const validator = new CodeValidator();
+    
+    const patterns = options.patterns ? options.patterns.split(',').map(p => p.trim()) : 
+                     ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'];
+
+    const analysis = analyzer.analyzeProject(process.cwd(), patterns);
+    const validationResult = validator.validateIdentifiers(analysis.identifiers, config.code);
+
+    console.log(`💻 Total identifiers: ${analysis.totalIdentifiers}`);
+    console.log(`📈 Code consistency: ${(analysis.consistencyScore * 100).toFixed(1)}%`);
+    console.log(`🎯 Violations found: ${validationResult.totalViolations}\n`);
+
+    // Show breakdown by category
+    const categories = ['variables', 'functions', 'classes', 'constants'] as const;
+    
+    console.log('📋 Code convention breakdown:');
+    for (const category of categories) {
+      const conventions = analysis.conventions[category];
+      const total = Object.values(conventions).reduce((a, b) => a + b, 0);
+      
+      if (total > 0) {
+        console.log(`\n   ${category.charAt(0).toUpperCase() + category.slice(1)} (${total} total):`);
+        for (const [convention, count] of Object.entries(conventions)) {
+          const percentage = (count / total * 100).toFixed(1);
+          const icon = convention === config.code[category] ? '✅' : '  ';
+          console.log(`   ${icon} ${convention.padEnd(20)} ${count.toString().padStart(3)} (${percentage}%)`);
+        }
+      }
+    }
+    console.log('');
+
+    // Show violations summary if any
+    if (validationResult.totalViolations > 0) {
+      console.log('❌ Top Violations:');
+      for (const [type, count] of Object.entries(validationResult.violationsByType)) {
+        console.log(`   ${type}: ${count} violations`);
+      }
+      console.log('');
+    }
+  }
+
+  // Overall recommendations
+  console.log('🎯 Recommendations');
+  console.log('═'.repeat(40));
+  
+  if (!options.codeOnly) {
+    const suggestionEngine = new SuggestionEngine();
+    const fileAnalysis = suggestionEngine.analyzeProjectStructure();
+    
+    if (fileAnalysis.consistency < 0.8) {
+      console.log('📁 File naming could be improved:');
+      console.log('   • Run `renamer validate --fix` to see file suggestions');
+      console.log('   • Run `renamer rename --dry-run` to preview changes');
+    } else {
+      console.log('✅ File naming is consistent!');
+    }
+  }
+  
+  if (!options.filesOnly && config.code) {
+    const analyzer = new ASTAnalyzer();
+    const patterns = options.patterns ? options.patterns.split(',').map(p => p.trim()) : 
+                     ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'];
+    const codeAnalysis = analyzer.analyzeProject(process.cwd(), patterns);
+    const validator = new CodeValidator();
+    const validationResult = validator.validateIdentifiers(codeAnalysis.identifiers, config.code);
+    
+    if (validationResult.totalViolations > 0) {
+      console.log('💻 Code naming could be improved:');
+      console.log('   • Run `renamer validate-code --fix` to see code suggestions');
+      console.log('   • Consider updating your naming conventions with `renamer init`');
+    } else {
+      console.log('✅ Code naming follows conventions!');
+    }
+  }
+  
+  console.log('\n💡 Tip: Run `renamer init` to update your naming conventions');
 }
 
 async function renameCommand(options: { dryRun?: boolean; force?: boolean; interactive?: boolean; keep?: string }): Promise<void> {
@@ -441,3 +639,130 @@ async function renameCommand(options: { dryRun?: boolean; force?: boolean; inter
 
   console.log(`\n📊 Completed: ${successCount} renamed, ${errorCount} failed`);
 }
+
+async function validateCodeCommand(options: { fix?: boolean; patterns?: string }): Promise<void> {
+  const configManager = new ConfigManager();
+  const config = configManager.loadConfig();
+  
+  if (!config.code) {
+    console.log('⚠️  No code conventions configured. Run `renamer init` to set up code conventions.');
+    return;
+  }
+
+  const analyzer = new ASTAnalyzer();
+  const validator = new CodeValidator();
+  
+  const patterns = options.patterns ? options.patterns.split(',').map(p => p.trim()) : 
+                   ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'];
+
+  console.log(`🔍 Validating code conventions...\n`);
+  console.log(`📝 Variables: ${config.code.variables}`);
+  console.log(`🔧 Functions: ${config.code.functions}`);
+  console.log(`⚛️  Components: ${config.code.components}`);
+  console.log(`📊 Constants: ${config.code.constants}`);
+  console.log(`🏛️  Classes: ${config.code.classes}\n`);
+
+  const analysis = analyzer.analyzeProject(process.cwd(), patterns);
+  const validationResult = validator.validateIdentifiers(analysis.identifiers, config.code);
+
+  if (validationResult.totalViolations === 0) {
+    console.log('✅ All code follows the naming conventions!');
+    console.log(`📊 Analyzed ${validationResult.totalChecked} identifiers across ${analysis.identifiers.length > 0 ? 'multiple files' : 'no files'}`);
+    return;
+  }
+
+  console.log(`❌ Found ${validationResult.totalViolations} naming violations:\n`);
+
+  // Group violations by file
+  const violationsByFile: { [filePath: string]: typeof validationResult.violations } = {};
+  for (const violation of validationResult.violations) {
+    const filePath = violation.identifier.filePath;
+    if (!violationsByFile[filePath]) {
+      violationsByFile[filePath] = [];
+    }
+    violationsByFile[filePath].push(violation);
+  }
+
+  // Display violations by file
+  for (const [filePath, violations] of Object.entries(violationsByFile)) {
+    console.log(`📁 ${filePath}:`);
+    for (const violation of violations) {
+      const line = violation.identifier.line;
+      const type = violation.identifier.isReactComponent ? 'React Component' : violation.identifier.type;
+      console.log(`   Line ${line}: ${type} "${violation.identifier.name}" should be "${violation.suggestedName}"`);
+      
+      if (options.fix) {
+        const suggestions = validator.suggestFixes(violation.identifier, config.code);
+        if (suggestions.length > 0) {
+          console.log(`   💡 Alternatives: ${suggestions.join(', ')}`);
+        }
+      }
+    }
+    console.log('');
+  }
+
+  // Summary
+  console.log('📋 Violation Summary:');
+  for (const [type, count] of Object.entries(validationResult.violationsByType)) {
+    console.log(`   ${type}: ${count} violations`);
+  }
+  
+  console.log(`\n📊 Total: ${validationResult.totalViolations} violations in ${Object.keys(violationsByFile).length} files`);
+  
+  if (!options.fix) {
+    console.log('\n💡 Use --fix to see suggested alternatives');
+  }
+}
+
+async function analyzeCodeCommand(options: { patterns?: string }): Promise<void> {
+  const analyzer = new ASTAnalyzer();
+  
+  const patterns = options.patterns ? options.patterns.split(',').map(p => p.trim()) : 
+                   ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'];
+
+  console.log('📊 Analyzing code structure and naming patterns...\n');
+
+  const analysis = analyzer.analyzeProject(process.cwd(), patterns);
+
+  console.log(`📁 Total identifiers: ${analysis.totalIdentifiers}`);
+  console.log(`📈 Consistency score: ${(analysis.consistencyScore * 100).toFixed(1)}%\n`);
+
+  // Show breakdown by category
+  const categories = ['variables', 'functions', 'classes', 'constants'] as const;
+  
+  for (const category of categories) {
+    const conventions = analysis.conventions[category];
+    const total = Object.values(conventions).reduce((a, b) => a + b, 0);
+    
+    if (total > 0) {
+      console.log(`📋 ${category.charAt(0).toUpperCase() + category.slice(1)} (${total} total):`);
+      for (const [convention, count] of Object.entries(conventions)) {
+        const percentage = (count / total * 100).toFixed(1);
+        console.log(`   ${convention.padEnd(20)} ${count.toString().padStart(3)} (${percentage}%)`);
+      }
+      console.log('');
+    }
+  }
+
+  // Recommendations
+  if (analysis.consistencyScore < 0.8) {
+    console.log('💡 Recommendations:');
+    console.log('   - Consider standardizing naming conventions across the project');
+    console.log('   - Use `renamer validate-code --fix` to see specific suggestions');
+    console.log('   - Run `renamer fix-code` for interactive refactoring');
+  } else {
+    console.log('✅ Good consistency! Your code follows consistent naming patterns.');
+  }
+}
+
+async function fixCodeCommand(_options: { dryRun?: boolean; patterns?: string }): Promise<void> {
+  console.log('🚧 Code transformation feature coming soon!');
+  console.log('');
+  console.log('For now, you can:');
+  console.log('1. Use `renamer validate-code --fix` to see suggested changes');
+  console.log('2. Manually apply the suggestions in your IDE');
+  console.log('3. Set up ESLint rules for automated enforcement');
+  console.log('');
+  console.log('Interactive code refactoring will be available in a future update.');
+}
+
