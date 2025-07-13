@@ -1,6 +1,6 @@
 {
   "name": "smart-renamer",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "🚀 Intelligent file and code naming suggestions based on project-specific naming conventions. Interactive CLI tool with AST-based code analysis for variables, functions, components, and more.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
