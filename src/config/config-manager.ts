@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { join } from 'path';
-import { NamingConfig, NamingConvention } from '../types';
+import { NamingConfig, NamingConvention, CodeConventions } from '../types';
 
 export class ConfigManager {
   private configPath: string;
@@ -8,7 +8,17 @@ export class ConfigManager {
     convention: 'camelCase',
     files: ['*.ts', '*.js'],
     folders: 'kebab-case',
-    exceptions: ['index', 'main', 'app']
+    exceptions: ['index', 'main', 'app'],
+    code: {
+      variables: 'camelCase',
+      functions: 'camelCase',
+      components: 'PascalCase',
+      constants: 'UPPER_SNAKE_CASE',
+      classes: 'PascalCase',
+      interfaces: 'PascalCase',
+      types: 'PascalCase',
+      enums: 'PascalCase'
+    }
   };
 
   constructor(projectRoot: string = process.cwd()) {
@@ -40,6 +50,7 @@ export class ConfigManager {
 
   private parseConfig(content: string): NamingConfig {
     const config: Partial<NamingConfig> = {};
+    const codeConfig: Partial<CodeConventions> = {};
     const lines = content.split('\n');
     let currentSection = '';
 
@@ -51,9 +62,11 @@ export class ConfigManager {
         continue;
       }
 
-      if (trimmed.includes('=') && currentSection === 'naming') {
-        const [key, value] = trimmed.split('=').map(s => s.trim());
-        
+      if (!trimmed.includes('=')) continue;
+
+      const [key, value] = trimmed.split('=').map(s => s.trim());
+
+      if (currentSection === 'naming') {
         switch (key) {
           case 'convention':
             if (value && this.isValidConvention(value)) {
@@ -76,19 +89,49 @@ export class ConfigManager {
             }
             break;
         }
+      } else if (currentSection === 'code') {
+        const validCodeKeys: (keyof CodeConventions)[] = [
+          'variables', 'functions', 'components', 'constants',
+          'classes', 'interfaces', 'types', 'enums'
+        ];
+        
+        if (validCodeKeys.includes(key as keyof CodeConventions) && 
+            value && this.isValidConvention(value)) {
+          codeConfig[key as keyof CodeConventions] = value as NamingConvention;
+        }
       }
+    }
+
+    if (Object.keys(codeConfig).length > 0) {
+      config.code = { ...this.defaultConfig.code!, ...codeConfig };
     }
 
     return { ...this.defaultConfig, ...config };
   }
 
   private stringifyConfig(config: NamingConfig): string {
-    return `[naming]
+    let content = `[naming]
 convention=${config.convention}
 files=${config.files.join(',')}
 folders=${config.folders || 'kebab-case'}
 exceptions=${config.exceptions?.join(',') || ''}
 `;
+
+    if (config.code) {
+      content += `
+[code]
+variables=${config.code.variables}
+functions=${config.code.functions}
+components=${config.code.components}
+constants=${config.code.constants}
+classes=${config.code.classes}
+interfaces=${config.code.interfaces}
+types=${config.code.types}
+enums=${config.code.enums}
+`;
+    }
+
+    return content;
   }
 
   private isValidConvention(value: string): boolean {
